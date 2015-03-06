@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 # Create a read-only disk image of the contents of a folder
 
@@ -82,8 +82,7 @@ while test "${1:0:1}" = "-"; do
       WINW=$2; WINH=$3
       shift; shift; shift;;
     --icon)
-      POSITION_CLAUSE="${POSITION_CLAUSE}set position of item \"$2\" to {$3, $4}
-"
+      POSITION_CLAUSE="${POSITION_CLAUSE}set position of item \"$2\" to {$3, $4}"
       shift; shift; shift; shift;;
     --hide-extension)
       HIDING_CLAUSE="${HIDING_CLAUSE}set the extension hidden of item \"$2\" to true"
@@ -98,8 +97,7 @@ while test "${1:0:1}" = "-"; do
       pure_version; exit 0;;
     --app-drop-link)
       APPLICATION_LINK=$2
-      APPLICATION_CLAUSE="set position of item \"Applications\" to {$2, $3}
-"
+      APPLICATION_CLAUSE="set position of item \"Applications\" to {$2, $3}"
       shift; shift; shift;;
     --eula)
       EULA_RSRC=$2
@@ -122,7 +120,7 @@ DMG_PATH="$1"
 DMG_DIRNAME="$(dirname "$DMG_PATH")"
 DMG_DIR="$(cd $DMG_DIRNAME > /dev/null; pwd)"
 DMG_NAME="$(basename "$DMG_PATH")"
-DMG_TEMP_NAME="$DMG_DIR/rw.${DMG_NAME}"
+DMG_TEMP_NAME="$DMG_DIR/rw.$$.${DMG_NAME}"
 SRC_FOLDER="$(cd "$2" > /dev/null; pwd)"
 test -z "$VOLUME_NAME" && VOLUME_NAME="$(basename "$DMG_PATH" .dmg)"
 
@@ -161,8 +159,10 @@ DEV_NAME=$(hdiutil info | egrep '^/dev/' | sed 1q | awk '{print $1}')
 test -d "${MOUNT_DIR}" && hdiutil detach "${DEV_NAME}"
 
 echo "Mount directory: $MOUNT_DIR"
-DEV_NAME=$(hdiutil attach -readwrite -noverify -noautoopen "${DMG_TEMP_NAME}" | egrep '^/dev/' | sed 1q | awk '{print $1}')
+DEV_NAME=$(hdiutil attach -mountrandom /Volumes -readwrite -noverify -noautoopen -nobrowse "${DMG_TEMP_NAME}" | egrep '^/dev/' | sed 1q | awk '{print $1}')
 echo "Device name:     $DEV_NAME"
+MOUNT_DIR=$(hdiutil info | grep "${DEV_NAME}s"|head -1|awk '{print $3}')
+echo "Mount dir:       $MOUNT_DIR"
 
 if ! test -z "$BACKGROUND_FILE"; then
   echo "Copying background file..."
@@ -181,6 +181,8 @@ if ! test -z "$VOLUME_ICON_FILE"; then
   cp "$VOLUME_ICON_FILE" "$MOUNT_DIR/.VolumeIcon.icns"
   SetFile -c icnC "$MOUNT_DIR/.VolumeIcon.icns"
 fi
+
+VOLUME_NAME=$(basename $MOUNT_DIR)
 
 # run applescript
 APPLESCRIPT=$(mktemp -t createdmg)
