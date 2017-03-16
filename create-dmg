@@ -148,7 +148,7 @@ else
   DISK_IMAGE_SIZE=$(expr $ACTUAL_SIZE + $ACTUAL_SIZE_LIMIT)
 fi
 
-hdiutil create -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -size ${DISK_IMAGE_SIZE}m "${DMG_TEMP_NAME}"
+hdiutil create -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -size ${DISK_IMAGE_SIZE}m "${DMG_TEMP_NAME2}"
 
 # mount it
 echo "Mounting disk image..."
@@ -159,7 +159,7 @@ echo "Unmounting disk image..."
 DEV_NAME=$(hdiutil info | egrep '^/dev/' | sed 1q | awk '{print $1}')
 test -d "${MOUNT_DIR}" && hdiutil detach "${DEV_NAME}"
 
-mv "${DMG_TEMP_NAME}" "${DMG_TEMP_NAME2}"
+echo "Converting to RW Image..."
 hdiutil convert -format UDRW -o "${DMG_TEMP_NAME}" "${DMG_TEMP_NAME2}"
 rm "${DMG_TEMP_NAME2}"
 
