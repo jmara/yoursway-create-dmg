@@ -148,11 +148,6 @@ else
 fi
 
 hdiutil create -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -size ${DISK_IMAGE_SIZE}m "${DMG_TEMP_NAME}"
-sync
-sleep 5
-sync
-
-hdiutil info
 
 # mount it
 echo "Mounting disk image..."
@@ -162,6 +157,10 @@ MOUNT_DIR="/Volumes/${VOLUME_NAME}"
 echo "Unmounting disk image..."
 DEV_NAME=$(hdiutil info | egrep '^/dev/' | sed 1q | awk '{print $1}')
 test -d "${MOUNT_DIR}" && hdiutil detach "${DEV_NAME}"
+
+mv "${DMG_TEMP_NAME}" "ro-${DMG_TEMP_NAME}"
+hdiutil convert -format UDRW -o "${DMG_TEMP_NAME}" "ro-${DMG_TEMP_NAME}"
+rm "ro-${DMG_TEMP_NAME}"
 
 echo "Mount directory: $MOUNT_DIR"
 DEV_NAME=$(hdiutil attach -mountrandom /Volumes -readwrite -noverify -noautoopen -nobrowse "${DMG_TEMP_NAME}" | egrep '^/dev/' | sed 1q | awk '{print $1}')
