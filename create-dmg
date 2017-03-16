@@ -148,6 +148,11 @@ else
 fi
 
 hdiutil create -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -size ${DISK_IMAGE_SIZE}m "${DMG_TEMP_NAME}"
+sync
+sleep 5
+sync
+
+hdiutil info
 
 # mount it
 echo "Mounting disk image..."
